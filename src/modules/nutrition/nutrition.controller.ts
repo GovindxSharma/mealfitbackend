@@ -36,13 +36,18 @@ export class NutritionController {
 
   // Calculate Rupee-to-Protein Daily Meal Plan
   static optimizeMealPlan = asyncHandler(async (req: Request, res: Response) => {
-    const { dailyBudgetInr = 100, targetProteinG = 120, dietCategory = 'veg', targetCalories = 2000 } = req.body;
+    const dailyBudgetInr = Math.max(30, Number(req.body.dailyBudgetInr ?? req.body.budget) || 100);
+    const targetProteinG = Math.max(30, Number(req.body.targetProteinG ?? req.body.protein) || 120);
+    const targetCalories = Math.max(800, Number(req.body.targetCalories ?? req.body.calories) || 2000);
+    
+    let diet = (req.body.dietCategory || req.body.diet || 'veg').toString().toLowerCase().trim();
+    if (!['veg', 'jain', 'eggetarian', 'non_veg'].includes(diet)) diet = 'veg';
 
     const plan = NutritionOptimizerService.optimizeDailyPlan({
-      dailyBudgetInr: Number(dailyBudgetInr),
-      targetProteinG: Number(targetProteinG),
-      dietCategory: dietCategory as any,
-      targetCalories: Number(targetCalories),
+      dailyBudgetInr,
+      targetProteinG,
+      dietCategory: diet as any,
+      targetCalories,
     });
 
     return res.status(200).json(createSuccessResponse(plan, 'Optimized Indian meal plan generated'));
@@ -50,11 +55,13 @@ export class NutritionController {
 
   // Generate 7-day categorized Kirana Store List with WhatsApp export
   static generateKiranaList = asyncHandler(async (req: Request, res: Response) => {
-    const { weeklyBudgetInr = 1000, dietCategory = 'veg' } = req.body;
+    const weeklyBudgetInr = Math.max(200, Number(req.body.weeklyBudgetInr ?? req.body.budget) || 1000);
+    let diet = (req.body.dietCategory || req.body.diet || 'veg').toString().toLowerCase().trim();
+    if (!['veg', 'jain', 'eggetarian', 'non_veg'].includes(diet)) diet = 'veg';
 
     const list = NutritionOptimizerService.generateKiranaList(
-      Number(weeklyBudgetInr),
-      dietCategory as any
+      weeklyBudgetInr,
+      diet as any
     );
 
     return res.status(200).json(createSuccessResponse(list, 'Kirana shopping list generated'));
@@ -62,7 +69,13 @@ export class NutritionController {
 
   // Fridge "Jugaad" Mode (Leftover Chef)
   static getFridgeJugaad = asyncHandler(async (req: Request, res: Response) => {
-    const { leftovers = ['yellow dal', 'boiled rice'] } = req.body;
+    let leftovers = req.body.leftovers || req.body.ingredients;
+    if (typeof leftovers === 'string') {
+      leftovers = leftovers.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (!Array.isArray(leftovers) || leftovers.length === 0) {
+      leftovers = ['yellow dal', 'boiled rice'];
+    }
 
     const recipes = NutritionOptimizerService.getFridgeJugaadRecipes(leftovers);
     return res.status(200).json(createSuccessResponse(recipes, 'Fridge Jugaad recipes generated'));
