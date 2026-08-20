@@ -40,9 +40,50 @@ export interface WeatherAQIResult {
 }
 
 export class WeatherService {
-  static async getCityWeatherAndAqi(cityNameOrKey: string = 'delhi', baseHydrationMl: number = 2500): Promise<WeatherAQIResult> {
-    const key = cityNameOrKey.toLowerCase().trim();
-    const city = INDIAN_MAJOR_CITIES[key] || INDIAN_MAJOR_CITIES['delhi'];
+  static async getCityWeatherAndAqi(
+    cityNameOrKey: string = 'delhi',
+    baseHydrationMl: number = 2500,
+    latitude?: number,
+    longitude?: number
+  ): Promise<WeatherAQIResult> {
+    let lat = latitude;
+    let lon = longitude;
+    let cityName = 'Current Location';
+    let stateName = 'India';
+
+    const key = (cityNameOrKey || '').toLowerCase().trim();
+
+    if (lat === undefined || lon === undefined) {
+      if (INDIAN_MAJOR_CITIES[key]) {
+        lat = INDIAN_MAJOR_CITIES[key].latitude;
+        lon = INDIAN_MAJOR_CITIES[key].longitude;
+        cityName = INDIAN_MAJOR_CITIES[key].cityName;
+        stateName = INDIAN_MAJOR_CITIES[key].state;
+      } else if (cityNameOrKey && cityNameOrKey.trim().length > 0) {
+        // Dynamic geocoding via Open-Meteo for ANY user-typed city, district or town
+        try {
+          const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityNameOrKey.trim())}&count=1&language=en&format=json`;
+          const geoRes = await axios.get(geoUrl, { timeout: 3000 });
+          if (geoRes.data?.results && geoRes.data.results.length > 0) {
+            const first = geoRes.data.results[0];
+            lat = first.latitude;
+            lon = first.longitude;
+            cityName = first.name;
+            stateName = first.admin1 || first.country || 'India';
+          }
+        } catch (geoErr) {
+          console.warn(`Geocoding error for ${cityNameOrKey}:`, (geoErr as any).message);
+        }
+      }
+    }
+
+    // Default fallback if still undefined
+    if (lat === undefined || lon === undefined) {
+      lat = 28.6139;
+      lon = 77.2090;
+      cityName = cityNameOrKey || 'New Delhi';
+      stateName = 'India';
+    }
 
     let temperatureC = 31;
     let humidityPercent = 55;
@@ -52,7 +93,7 @@ export class WeatherService {
 
     try {
       // 1. Fetch live weather from Open-Meteo
-      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m`;
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m`;
       const weatherRes = await axios.get(weatherUrl, { timeout: 3500 });
 
       if (weatherRes.data?.current) {
@@ -63,14 +104,14 @@ export class WeatherService {
       }
 
       // 2. Fetch live Air Quality Index (European / US AQI from Open-Meteo Air Quality API)
-      const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.latitude}&longitude=${city.longitude}&current=us_aqi,pm2_5`;
+      const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5`;
       const aqiRes = await axios.get(aqiUrl, { timeout: 3500 });
 
       if (aqiRes.data?.current?.us_aqi) {
         aqi = Math.round(aqiRes.data.current.us_aqi);
       }
     } catch (err) {
-      console.warn(`Weather API fallback used for ${city.cityName}:`, (err as any).message);
+      console.warn(`Weather API fallback used for ${cityName}:`, (err as any).message);
     }
 
     // 3. Dynamic Hydration Calculation
@@ -115,8 +156,8 @@ export class WeatherService {
     }
 
     return {
-      city: city.cityName,
-      state: city.state,
+      city: cityName,
+      state: stateName,
       temperatureC,
       humidityPercent,
       apparentTempC,

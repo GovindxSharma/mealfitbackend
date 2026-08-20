@@ -4,12 +4,14 @@ import { asyncHandler } from '../../shared/errorHandler';
 import { createSuccessResponse } from '../../shared/types';
 
 export class WeatherController {
-  // Get live weather and AQI for a specific Indian city
+  // Get live weather and AQI for a specific Indian city or GPS coordinates
   static getCityStatus = asyncHandler(async (req: Request, res: Response) => {
     const city = (req.query.city as string) || 'delhi';
     const baseHydrationMl = Number(req.query.baseHydrationMl) || 2500;
+    const lat = req.query.latitude ? Number(req.query.latitude) : undefined;
+    const lon = req.query.longitude ? Number(req.query.longitude) : undefined;
 
-    const result = await WeatherService.getCityWeatherAndAqi(city, baseHydrationMl);
+    const result = await WeatherService.getCityWeatherAndAqi(city, baseHydrationMl, lat, lon);
     return res.status(200).json(createSuccessResponse(result, `Live weather & AQI for ${result.city}`));
   });
 
