@@ -2,13 +2,15 @@ import http from 'http';
 import { createApp } from './app';
 import { config } from './config/env';
 import { connectDatabase, closeDatabase } from './config/db';
+import { seedAdminUsers } from './modules/auth/auth.seeder';
 
 const startServer = async () => {
   const app = createApp();
   const server = http.createServer(app);
 
-  // Attempt database connection
+  // Attempt database connection & seed admin
   await connectDatabase();
+  await seedAdminUsers().catch(() => {});
 
   server.listen(config.port, '0.0.0.0', () => {
     console.log(`

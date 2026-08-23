@@ -7,6 +7,7 @@ export interface IUser extends Document {
   googleId?: string;
   avatarUrl?: string;
   authProvider: 'local' | 'google';
+  role: 'user' | 'super_admin' | 'admin';
   gender: 'male' | 'female' | 'other';
   dateOfBirth?: Date;
   heightCm: number;
@@ -33,6 +34,7 @@ const UserSchema = new Schema<IUser>(
     googleId: { type: String, sparse: true },
     avatarUrl: { type: String },
     authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
+    role: { type: String, enum: ['user', 'super_admin', 'admin'], default: 'user' },
     gender: { type: String, enum: ['male', 'female', 'other'], default: 'male' },
     dateOfBirth: { type: Date },
     heightCm: { type: Number, default: 170, min: 40, max: 280 },
