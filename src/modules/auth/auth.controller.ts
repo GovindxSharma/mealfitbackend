@@ -173,6 +173,8 @@ export class AuthController {
         const ticket = await googleAuthClient.verifyIdToken({
           idToken,
           audience: [
+            '874250049604-lni6cam19jjfb8gq6s9oq9m4qinco9qq.apps.googleusercontent.com',
+            '874250049604-f1dn616ggbc99ub7h6mgatjer72hrju3.apps.googleusercontent.com',
             '351938721714-v7jmbogjvvnik6utb00ovph4hn5ee9t9.apps.googleusercontent.com',
             '351938721714-op178a4jbmssutp6td8ivmdgr8pdc62e.apps.googleusercontent.com',
           ],
