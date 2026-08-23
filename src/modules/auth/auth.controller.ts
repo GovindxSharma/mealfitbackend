@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { User } from './user.model';
 import { config } from '../../config/env';
 import { AppError, asyncHandler } from '../../shared/errorHandler';
 import { createSuccessResponse, AuthRequest } from '../../shared/types';
+
+const googleAuthClient = new OAuth2Client(config.googleClientId || '351938721714-v7jmbogjvvnik6utb00ovph4hn5ee9t9.apps.googleusercontent.com');
 
 export class AuthController {
   static register = asyncHandler(async (req: Request, res: Response) => {
@@ -141,10 +144,11 @@ export class AuthController {
   // Google OAuth Login & Auto-Registration
   static googleAuth = asyncHandler(async (req: Request, res: Response) => {
     const {
-      email,
-      fullName,
-      googleId,
-      avatarUrl,
+      idToken,
+      email: rawEmail,
+      fullName: rawFullName,
+      googleId: rawGoogleId,
+      avatarUrl: rawAvatarUrl,
       gender,
       heightCm,
       weightKg,
@@ -158,6 +162,32 @@ export class AuthController {
       carbsTargetG,
       fatTargetG,
     } = req.body;
+
+    let email = rawEmail;
+    let fullName = rawFullName;
+    let googleId = rawGoogleId;
+    let avatarUrl = rawAvatarUrl;
+
+    if (idToken) {
+      try {
+        const ticket = await googleAuthClient.verifyIdToken({
+          idToken,
+          audience: [
+            '351938721714-v7jmbogjvvnik6utb00ovph4hn5ee9t9.apps.googleusercontent.com',
+            '351938721714-op178a4jbmssutp6td8ivmdgr8pdc62e.apps.googleusercontent.com',
+          ],
+        });
+        const payload = ticket.getPayload();
+        if (payload && payload.email) {
+          email = payload.email;
+          fullName = payload.name || payload.given_name || fullName;
+          avatarUrl = payload.picture || avatarUrl;
+          googleId = payload.sub || googleId;
+        }
+      } catch (err: any) {
+        console.log('[Google Auth Backend] idToken verification info:', err?.message || err);
+      }
+    }
 
     if (!email) {
       throw new AppError('Email is required for Google Sign-In', 400);
