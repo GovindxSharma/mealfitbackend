@@ -10,6 +10,8 @@ export const config = {
     .split(',')
     .map(o => o.trim())
     .filter(Boolean),
+  googleClientId: process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '',
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
   isProd: process.env.NODE_ENV === 'production',
 };

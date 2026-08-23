@@ -21,9 +21,12 @@ export const RegisterUserSchema = z.object({
       gender: genderVal,
       dateOfBirth: dob,
       heightCm: Number(val.heightCm) || 170,
+      weightKg: Number(val.weightKg) || 70,
+      targetWeightKg: Number(val.targetWeightKg) || 65,
       dietaryPreference: dietVal,
       weeklyBudgetInr: Number(val.weeklyBudgetInr) || 1000,
       preferredLanguage: (val.preferredLanguage || 'en').toString().trim(),
+      city: (val.city || 'delhi').toString().trim(),
     };
   }, z.object({
     fullName: z.string().min(1).default('MealFit Member'),
@@ -32,9 +35,12 @@ export const RegisterUserSchema = z.object({
     gender: z.enum(['male', 'female', 'other']).default('male'),
     dateOfBirth: z.string().or(z.date()).transform((val) => new Date(val)),
     heightCm: z.number().min(40).max(280).default(170),
+    weightKg: z.number().optional(),
+    targetWeightKg: z.number().optional(),
     dietaryPreference: z.enum(['veg', 'jain', 'eggetarian', 'non_veg']).default('veg'),
     weeklyBudgetInr: z.number().min(100).default(1000),
     preferredLanguage: z.string().default('en'),
+    city: z.string().default('delhi'),
   })),
 });
 
@@ -52,6 +58,26 @@ export const LoginUserSchema = z.object({
   })),
 });
 
+export const GoogleAuthSchema = z.object({
+  body: z.preprocess((val: any) => {
+    if (!val || typeof val !== 'object') return {};
+    return {
+      ...val,
+      email: (val.email || '').toString().toLowerCase().trim(),
+      fullName: (val.fullName || val.name || 'MealFit Member').toString().trim(),
+      googleId: val.googleId ? val.googleId.toString() : undefined,
+      avatarUrl: val.avatarUrl || val.photoUrl || val.picture ? (val.avatarUrl || val.photoUrl || val.picture).toString() : undefined,
+      idToken: val.idToken ? val.idToken.toString() : undefined,
+    };
+  }, z.object({
+    email: z.string().email('Invalid email address'),
+    fullName: z.string().min(1).default('MealFit Member'),
+    googleId: z.string().optional(),
+    avatarUrl: z.string().optional(),
+    idToken: z.string().optional(),
+  })),
+});
+
 export const UpdateProfileSchema = z.object({
   body: z.preprocess((val: any) => {
     if (!val || typeof val !== 'object') return {};
@@ -59,7 +85,16 @@ export const UpdateProfileSchema = z.object({
     if (val.email) result.email = val.email.toString().toLowerCase().trim();
     if (val.fullName) result.fullName = val.fullName.toString().trim();
     if (val.heightCm) result.heightCm = Number(val.heightCm);
+    if (val.weightKg) result.weightKg = Number(val.weightKg);
+    if (val.targetWeightKg) result.targetWeightKg = Number(val.targetWeightKg);
     if (val.weeklyBudgetInr) result.weeklyBudgetInr = Number(val.weeklyBudgetInr);
+    if (val.city) result.city = val.city.toString().trim();
+    if (val.goalType) result.goalType = val.goalType.toString().trim();
+    if (val.dailyCalorieTarget) result.dailyCalorieTarget = Number(val.dailyCalorieTarget);
+    if (val.proteinTargetG) result.proteinTargetG = Number(val.proteinTargetG);
+    if (val.carbsTargetG) result.carbsTargetG = Number(val.carbsTargetG);
+    if (val.fatTargetG) result.fatTargetG = Number(val.fatTargetG);
+    if (val.avatarUrl) result.avatarUrl = val.avatarUrl.toString();
     if (val.dietaryPreference) {
       const diet = val.dietaryPreference.toString().toLowerCase().trim();
       if (['veg', 'jain', 'eggetarian', 'non_veg'].includes(diet)) {
@@ -71,9 +106,17 @@ export const UpdateProfileSchema = z.object({
     fullName: z.string().min(1).optional(),
     email: z.string().email().optional(),
     heightCm: z.number().min(40).max(280).optional(),
+    weightKg: z.number().optional(),
+    targetWeightKg: z.number().optional(),
+    goalType: z.string().optional(),
     dietaryPreference: z.enum(['veg', 'jain', 'eggetarian', 'non_veg']).optional(),
     weeklyBudgetInr: z.number().min(100).optional(),
     preferredLanguage: z.string().optional(),
     city: z.string().optional(),
+    avatarUrl: z.string().optional(),
+    dailyCalorieTarget: z.number().optional(),
+    proteinTargetG: z.number().optional(),
+    carbsTargetG: z.number().optional(),
+    fatTargetG: z.number().optional(),
   })),
 });
