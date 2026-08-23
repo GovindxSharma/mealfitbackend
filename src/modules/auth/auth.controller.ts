@@ -481,9 +481,19 @@ export class AuthController {
 
   static updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
-    const updates = req.body;
+    const email = req.user?.email || req.body.email;
+    const updates = { ...req.body };
+    delete updates.password;
+    delete updates.passwordHash;
 
-    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-passwordHash');
+    let user = null;
+    if (userId) {
+      user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-passwordHash');
+    }
+    if (!user && email) {
+      user = await User.findOneAndUpdate({ email }, updates, { new: true }).select('-passwordHash');
+    }
+
     if (!user) {
       throw new AppError('User not found', 404);
     }
