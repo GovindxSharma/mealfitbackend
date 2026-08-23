@@ -58,26 +58,6 @@ export const LoginUserSchema = z.object({
   })),
 });
 
-export const GoogleAuthSchema = z.object({
-  body: z.preprocess((val: any) => {
-    if (!val || typeof val !== 'object') return {};
-    return {
-      ...val,
-      email: (val.email || '').toString().toLowerCase().trim(),
-      fullName: (val.fullName || val.name || 'MealFit Member').toString().trim(),
-      googleId: val.googleId ? val.googleId.toString() : undefined,
-      avatarUrl: val.avatarUrl || val.photoUrl || val.picture ? (val.avatarUrl || val.photoUrl || val.picture).toString() : undefined,
-      idToken: val.idToken ? val.idToken.toString() : undefined,
-    };
-  }, z.object({
-    email: z.string().email('Invalid email address'),
-    fullName: z.string().min(1).default('MealFit Member'),
-    googleId: z.string().optional(),
-    avatarUrl: z.string().optional(),
-    idToken: z.string().optional(),
-  })),
-});
-
 export const UpdateProfileSchema = z.object({
   body: z.preprocess((val: any) => {
     if (!val || typeof val !== 'object') return {};
