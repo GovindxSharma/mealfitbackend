@@ -12,4 +12,8 @@ router.get('/me', authenticateJwt, AuthController.getProfile);
 router.patch('/profile', authenticateJwt, validateRequest(UpdateProfileSchema), AuthController.updateProfile);
 router.put('/profile', authenticateJwt, validateRequest(UpdateProfileSchema), AuthController.updateProfile);
 
+// Super Admin user & role management
+router.get('/admin/users', authenticateJwt, AuthController.getAllUsers);
+router.patch('/admin/users/:targetUserId/role', authenticateJwt, AuthController.updateUserRole);
+
 export const authRoutes = router;

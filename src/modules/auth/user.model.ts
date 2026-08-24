@@ -22,6 +22,7 @@ export interface IUser extends Document {
   carbsTargetG?: number;
   fatTargetG?: number;
   preferredLanguage: string;
+  lastActiveAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,6 +54,7 @@ const UserSchema = new Schema<IUser>(
     carbsTargetG: { type: Number, default: 180 },
     fatTargetG: { type: Number, default: 50 },
     preferredLanguage: { type: String, default: 'en' },
+    lastActiveAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

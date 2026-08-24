@@ -27,16 +27,18 @@ export const RegisterUserSchema = z.object({
       weeklyBudgetInr: Number(val.weeklyBudgetInr) || 1000,
       preferredLanguage: (val.preferredLanguage || 'en').toString().trim(),
       city: (val.city || 'delhi').toString().trim(),
+      password: (val.password || '').toString(),
     };
   }, z.object({
-    fullName: z.string().min(1).default('MealFit Member'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(4, 'Password must be at least 4 characters').optional(),
+    fullName: z.string().min(1, 'Full name is required').default('MealFit Member'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
     gender: z.enum(['male', 'female', 'other']).default('male'),
     dateOfBirth: z.string().or(z.date()).transform((val) => new Date(val)),
     heightCm: z.number().min(40).max(280).default(170),
     weightKg: z.number().optional(),
     targetWeightKg: z.number().optional(),
+    goalType: z.string().optional(),
     dietaryPreference: z.enum(['veg', 'jain', 'eggetarian', 'non_veg']).default('veg'),
     weeklyBudgetInr: z.number().min(100).default(1000),
     preferredLanguage: z.string().default('en'),
@@ -53,7 +55,7 @@ export const LoginUserSchema = z.object({
       password: (val.password || '').toString(),
     };
   }, z.object({
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Please enter a valid email address'),
     password: z.string().min(1, 'Password is required'),
   })),
 });
