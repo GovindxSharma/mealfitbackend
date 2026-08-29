@@ -1,5 +1,24 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IUserSavedMeal {
+  id: string;
+  name: string;
+  dishDescription: string;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  costInr: number;
+  slot: string;
+  createdAt: string;
+}
+
+export interface IUserNotifications {
+  water: boolean;
+  meals: boolean;
+  workouts: boolean;
+}
+
 export interface IUser extends Document {
   fullName: string;
   email: string;
@@ -22,6 +41,8 @@ export interface IUser extends Document {
   carbsTargetG?: number;
   fatTargetG?: number;
   preferredLanguage: string;
+  savedMeals?: IUserSavedMeal[];
+  notifications?: IUserNotifications;
   lastActiveAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -54,9 +75,33 @@ const UserSchema = new Schema<IUser>(
     carbsTargetG: { type: Number, default: 180 },
     fatTargetG: { type: Number, default: 50 },
     preferredLanguage: { type: String, default: 'en' },
+    savedMeals: [
+      {
+        id: { type: String },
+        name: { type: String },
+        dishDescription: { type: String },
+        calories: { type: Number },
+        proteinG: { type: Number },
+        carbsG: { type: Number },
+        fatG: { type: Number },
+        costInr: { type: Number },
+        slot: { type: String },
+        createdAt: { type: String },
+      },
+    ],
+    notifications: {
+      water: { type: Boolean, default: true },
+      meals: { type: Boolean, default: true },
+      workouts: { type: Boolean, default: true },
+    },
     lastActiveAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
+UserSchema.index({ role: 1 });
+UserSchema.index({ lastActiveAt: -1 });
+UserSchema.index({ updatedAt: -1 });
+
 export const User = mongoose.model<IUser>('User', UserSchema);
+

@@ -83,6 +83,16 @@ export const UpdateProfileSchema = z.object({
         result.dietaryPreference = diet;
       }
     }
+    if (Array.isArray(val.savedMeals)) {
+      result.savedMeals = val.savedMeals;
+    }
+    if (val.notifications && typeof val.notifications === 'object') {
+      result.notifications = {
+        water: val.notifications.water !== undefined ? Boolean(val.notifications.water) : true,
+        meals: val.notifications.meals !== undefined ? Boolean(val.notifications.meals) : true,
+        workouts: val.notifications.workouts !== undefined ? Boolean(val.notifications.workouts) : true,
+      };
+    }
     return result;
   }, z.object({
     fullName: z.string().min(1).optional(),
@@ -100,5 +110,11 @@ export const UpdateProfileSchema = z.object({
     proteinTargetG: z.number().optional(),
     carbsTargetG: z.number().optional(),
     fatTargetG: z.number().optional(),
+    savedMeals: z.array(z.any()).optional(),
+    notifications: z.object({
+      water: z.boolean().optional(),
+      meals: z.boolean().optional(),
+      workouts: z.boolean().optional(),
+    }).optional(),
   })),
 });

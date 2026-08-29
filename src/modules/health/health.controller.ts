@@ -3,6 +3,7 @@ import os from 'os';
 import axios from 'axios';
 import { checkDbHealth } from '../../config/db';
 import { config } from '../../config/env';
+import { redisCache } from '../../config/redis';
 import { createSuccessResponse } from '../../shared/types';
 import { asyncHandler } from '../../shared/errorHandler';
 
@@ -76,6 +77,7 @@ export class HealthController {
         uptimeSeconds: Math.floor(uptimeSeconds),
         uptimeHuman: formatUptime(uptimeSeconds),
         database: dbHealth,
+        cache: redisCache.getStatus(),
         externalServices: {
           openMeteoWeather: weatherServiceStatus,
         },

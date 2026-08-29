@@ -12,6 +12,7 @@ export const config = {
     .filter(Boolean),
   googleClientId: process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '',
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  redisUrl: process.env.REDIS_URL || process.env.REDIS_CACHE_URL || '',
   isDev: (process.env.NODE_ENV || 'development') === 'development',
   isProd: process.env.NODE_ENV === 'production',
 };

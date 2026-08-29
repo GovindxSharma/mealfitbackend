@@ -1,14 +1,21 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IMealLog {
-  mealType: 'breakfast' | 'lunch' | 'snack' | 'dinner';
+  customId?: string;
+  mealType: 'breakfast' | 'lunch' | 'evening_snack' | 'dinner' | 'snack';
   dishName: string;
-  portionKatoris: number;
-  rotiCount: number;
-  gheeAdded: boolean;
+  hindiName?: string;
+  portionKatoris?: number;
+  rotiCount?: number;
+  gheeAdded?: boolean;
   calories: number;
   proteinG: number;
+  carbsG?: number;
+  fatG?: number;
+  slot?: string;
+  quantity?: string;
   costInr?: number;
+  time?: string;
   imageUrl?: string;
 }
 
@@ -42,18 +49,25 @@ const DailyLogSchema = new Schema<IDailyLog>(
     adherenceScore: { type: Number, default: 0 },
     meals: [
       {
+        customId: { type: String },
         mealType: {
           type: String,
-          enum: ['breakfast', 'lunch', 'snack', 'dinner'],
-          required: true,
+          enum: ['breakfast', 'lunch', 'evening_snack', 'dinner', 'snack'],
+          default: 'lunch',
         },
         dishName: { type: String, required: true },
+        hindiName: { type: String },
         portionKatoris: { type: Number, default: 1 },
         rotiCount: { type: Number, default: 0 },
         gheeAdded: { type: Boolean, default: false },
-        calories: { type: Number, required: true },
-        proteinG: { type: Number, required: true },
-        costInr: { type: Number },
+        calories: { type: Number, required: true, default: 0 },
+        proteinG: { type: Number, required: true, default: 0 },
+        carbsG: { type: Number, default: 0 },
+        fatG: { type: Number, default: 0 },
+        slot: { type: String, default: 'lunch' },
+        quantity: { type: String, default: '1 Serving' },
+        costInr: { type: Number, default: 25 },
+        time: { type: String },
         imageUrl: { type: String },
       },
     ],

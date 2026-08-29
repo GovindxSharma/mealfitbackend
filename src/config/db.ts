@@ -30,6 +30,9 @@ export const connectDatabase = async (): Promise<void> => {
       await mongoose.connect(config.mongoUri, {
         serverSelectionTimeoutMS: 5000,
         connectTimeoutMS: 10000,
+        maxPoolSize: 50,
+        minPoolSize: 5,
+        socketTimeoutMS: 45000,
       });
       console.log('✅ MongoDB Atlas connected successfully');
     } else {
@@ -39,6 +42,9 @@ export const connectDatabase = async (): Promise<void> => {
         await mongoose.connect(config.mongoUri, {
           serverSelectionTimeoutMS: 2000,
           connectTimeoutMS: 3000,
+          maxPoolSize: 50,
+          minPoolSize: 5,
+          socketTimeoutMS: 45000,
         });
         console.log('✅ Local MongoDB daemon connected successfully');
       } catch (localErr) {
@@ -50,6 +56,9 @@ export const connectDatabase = async (): Promise<void> => {
 
         await mongoose.connect(memoryUri, {
           dbName: 'mealfit',
+          maxPoolSize: 50,
+          minPoolSize: 5,
+          socketTimeoutMS: 45000,
         });
         console.log('✅ Local MongoDB instance started & connected successfully!');
       }

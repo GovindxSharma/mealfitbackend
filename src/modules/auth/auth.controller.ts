@@ -39,6 +39,8 @@ export class AuthController {
       proteinTargetG: user.proteinTargetG,
       carbsTargetG: user.carbsTargetG,
       fatTargetG: user.fatTargetG,
+      savedMeals: user.savedMeals || [],
+      notifications: user.notifications || { water: true, meals: true, workouts: true },
       lastActiveAt: user.lastActiveAt || user.updatedAt || user.createdAt,
       activityStatus,
       isActiveToday: activityStatus !== 'idle',

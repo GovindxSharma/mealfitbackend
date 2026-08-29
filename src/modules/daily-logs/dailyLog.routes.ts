@@ -7,6 +7,9 @@ const router = Router();
 
 router.get('/', authenticateJwt, DailyLogController.getDailyLog);
 router.post('/meals', authenticateJwt, validateRequest(LogMealSchema), DailyLogController.logMeal);
+router.post('/meal', authenticateJwt, validateRequest(LogMealSchema), DailyLogController.logMeal);
+router.delete('/meals/:mealId', authenticateJwt, DailyLogController.deleteMeal);
+router.delete('/meal/:mealId', authenticateJwt, DailyLogController.deleteMeal);
 router.patch('/metrics', authenticateJwt, validateRequest(UpdateDailyMetricsSchema), DailyLogController.updateMetrics);
 
 export const dailyLogRoutes = router;

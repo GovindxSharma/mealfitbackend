@@ -32,14 +32,14 @@ export const CalculateBiometricsSchema = z.object({
 
     return {
       ...val,
-      currentWeightKg: Number(currentWeight) || 70,
-      targetWeightKg: Number(targetWeight) || 70,
-      heightCm: Number(height) || 170,
-      age: Number(ageVal) || 25,
+      currentWeightKg: Math.max(20, Math.min(350, Number(currentWeight) || 70)),
+      targetWeightKg: Math.max(20, Math.min(350, Number(targetWeight) || 70)),
+      heightCm: Math.max(40, Math.min(280, Number(height) || 170)),
+      age: Math.max(5, Math.min(120, Number(ageVal) || 25)),
       gender: genderVal,
       activityLevel: actVal,
       goalType: goal,
-      durationWeeks: val.durationWeeks ? Number(val.durationWeeks) : undefined,
+      durationWeeks: val.durationWeeks ? Math.max(1, Math.min(104, Number(val.durationWeeks))) : undefined,
     };
   }, z.object({
     currentWeightKg: z.number().min(20).max(350).default(70),

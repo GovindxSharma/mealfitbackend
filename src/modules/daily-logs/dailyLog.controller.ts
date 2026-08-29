@@ -50,21 +50,28 @@ export class DailyLogController {
     );
   });
 
-  // Log a single meal with Indian portion units (katoris, phulkas, ghee modifier)
+  // Log a single meal with Indian portion units or custom macro details
   static logMeal = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new AppError('Unauthorized', 401);
 
     const {
+      customId,
       logDate = getTodayString(),
-      mealType,
+      mealType = 'lunch',
       dishName,
+      hindiName,
       portionKatoris = 1,
       rotiCount = 0,
       gheeAdded = false,
-      calories,
-      proteinG,
-      costInr = 0,
+      calories = 0,
+      proteinG = 0,
+      carbsG = 0,
+      fatG = 0,
+      slot = 'lunch',
+      quantity = '1 Serving',
+      costInr = 25,
+      time,
       imageUrl,
     } = req.body;
 
@@ -86,20 +93,46 @@ export class DailyLogController {
     }
 
     log.meals.push({
+      customId: customId || `meal_${Date.now()}`,
       mealType,
       dishName,
+      hindiName,
       portionKatoris,
       rotiCount,
       gheeAdded,
       calories: calibratedCalories,
       proteinG,
+      carbsG,
+      fatG,
+      slot,
+      quantity,
       costInr,
+      time: time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       imageUrl,
     });
 
     await log.save();
 
-    return res.status(201).json(createSuccessResponse(log, 'Meal logged successfully'));
+    return res.status(201).json(createSuccessResponse(log, 'Meal logged successfully in MongoDB'));
+  });
+
+  // Delete a logged meal by its MongoDB _id or customId
+  static deleteMeal = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError('Unauthorized', 401);
+
+    const { mealId } = req.params;
+    const logDate = (req.query.date as string) || getTodayString();
+
+    const log = await DailyLog.findOne({ userId, logDate });
+    if (log) {
+      log.meals = log.meals.filter(
+        (m: any) => m._id?.toString() !== mealId && m.customId !== mealId
+      );
+      await log.save();
+    }
+
+    return res.status(200).json(createSuccessResponse(log, 'Meal deleted successfully from MongoDB'));
   });
 
   // Increment water or update steps / weight
@@ -148,6 +181,6 @@ export class DailyLogController {
 
     await log.save();
 
-    return res.status(200).json(createSuccessResponse(log, 'Daily metrics updated'));
+    return res.status(200).json(createSuccessResponse(log, 'Daily metrics updated in MongoDB'));
   });
 }

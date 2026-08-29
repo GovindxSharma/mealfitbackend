@@ -31,11 +31,16 @@ export interface BiometricsCalculationResult {
 
 export class BiometricsService {
   static calculate(input: BiometricsInput): BiometricsCalculationResult {
-    const { currentWeightKg, heightCm, age, gender, activityLevel, targetWeightKg } = input;
+    const weight = Math.max(20, Math.min(300, Number(input.currentWeightKg) || 70));
+    const height = Math.max(40, Math.min(260, Number(input.heightCm) || 170));
+    const userAge = Math.max(10, Math.min(120, Number(input.age) || 25));
+    const targetWeight = Math.max(20, Math.min(300, Number(input.targetWeightKg) || (weight - 5)));
+    const gender = input.gender || 'male';
+    const activityLevel = input.activityLevel || 'sedentary';
 
-    // 1. BMI Calculation
-    const heightM = heightCm / 100;
-    const bmi = parseFloat((currentWeightKg / (heightM * heightM)).toFixed(1));
+    // 1. BMI Calculation (Guaranteed non-zero denominator)
+    const heightM = height / 100;
+    const bmi = parseFloat((weight / (heightM * heightM)).toFixed(1));
     
     let bmiCategory = 'Normal';
     if (bmi < 18.5) bmiCategory = 'Underweight';
@@ -43,17 +48,16 @@ export class BiometricsService {
     else if (bmi >= 27.5) bmiCategory = 'Obese (Asian-Indian Standard)';
 
     // 2. Deurenberg Body Fat Percentage Formula
-    // Body Fat % = (1.20 × BMI) + (0.23 × Age) - (10.8 × sex) - 5.4 (sex=1 for male, 0 for female)
     const sexFactor = gender === 'female' ? 0 : 1;
-    const rawBodyFat = (1.20 * bmi) + (0.23 * age) - (10.8 * sexFactor) - 5.4;
+    const rawBodyFat = (1.20 * bmi) + (0.23 * userAge) - (10.8 * sexFactor) - 5.4;
     const estimatedBodyFatPercentage = Math.max(5, Math.min(60, parseFloat(rawBodyFat.toFixed(1))));
 
     // 3. Mifflin-St Jeor BMR
     let bmr = 0;
     if (gender === 'female') {
-      bmr = (10 * currentWeightKg) + (6.25 * heightCm) - (5 * age) - 161;
+      bmr = (10 * weight) + (6.25 * height) - (5 * userAge) - 161;
     } else {
-      bmr = (10 * currentWeightKg) + (6.25 * heightCm) - (5 * age) + 5;
+      bmr = (10 * weight) + (6.25 * height) - (5 * userAge) + 5;
     }
     bmr = Math.round(bmr);
 
@@ -68,7 +72,7 @@ export class BiometricsService {
     const tdee = Math.round(bmr * multiplier);
 
     // 5. Goal Analysis & Safe Bounds
-    const weightDifferenceKg = targetWeightKg - currentWeightKg;
+    const weightDifferenceKg = targetWeight - weight;
     let goalType: 'fat_loss' | 'muscle_gain' | 'maintenance' = input.goalType || 'maintenance';
     
     if (Math.abs(weightDifferenceKg) < 0.5) {
@@ -81,20 +85,18 @@ export class BiometricsService {
 
     // Default duration calculation (safe bound: 0.5kg/week)
     const safeRateKgPerWeek = 0.5;
-    const targetDurationWeeks = input.durationWeeks || Math.max(4, Math.ceil(Math.abs(weightDifferenceKg) / safeRateKgPerWeek));
+    const targetDurationWeeks = Math.max(1, input.durationWeeks || Math.max(4, Math.ceil(Math.abs(weightDifferenceKg) / safeRateKgPerWeek)));
     const weeklyDeltaKg = parseFloat((weightDifferenceKg / targetDurationWeeks).toFixed(2));
 
     // Daily Caloric Adjustment (7700 kcal per 1kg fat)
-    // 0.5kg per week = ~550 kcal / day deficit or surplus
     const dailyCaloricDelta = Math.round((weeklyDeltaKg * 7700) / 7);
     
-    // Bounds check to avoid unsafe extremes (minimum 1200 kcal for women, 1500 for men)
+    // Bounds check to avoid unsafe extremes (minimum 1200 kcal for women, 1400 for men)
     const minSafeCalories = gender === 'female' ? 1200 : 1400;
     const dailyCalorieTarget = Math.max(minSafeCalories, tdee + dailyCaloricDelta);
 
     // 6. Macro Allocations (High Protein Indian Standard)
-    // Protein: 1.8g per kg bodyweight
-    const proteinG = Math.round(currentWeightKg * 1.8);
+    const proteinG = Math.round(weight * 1.8);
     const proteinCalories = proteinG * 4;
 
     // Fat: 25% of total daily calories
@@ -106,7 +108,7 @@ export class BiometricsService {
     const carbG = Math.round(carbCalories / 4);
 
     // 7. Base Hydration (35ml per kg bodyweight)
-    const hydrationTargetMl = Math.round(currentWeightKg * 35);
+    const hydrationTargetMl = Math.round(weight * 35);
 
     return {
       bmi,
