@@ -5,7 +5,7 @@ const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MealFit India - Product Manual & Role Specification</title>
+  <title>MealFit - Product Manual & Role Specification</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
     
@@ -150,7 +150,7 @@ const htmlContent = `<!DOCTYPE html>
 
   <div class="header-banner">
     <div class="header-badge">OFFICIAL SYSTEM SPECIFICATION & PRODUCT MANUAL</div>
-    <h1>MealFit India Product Manual</h1>
+    <h1>MealFit Product Manual</h1>
     <p class="header-sub">Role Hierarchy, Functional UI Blueprints, and End-to-End Workflow Architecture</p>
   </div>
 
@@ -240,7 +240,7 @@ const htmlContent = `<!DOCTYPE html>
   </ol>
 
   <div class="footer-note">
-    MealFit India &copy; 2026 • Verified Production Build • Document Reference: MF-DOC-2026-V2.4
+    MealFit &copy; 2026 • Verified Production Build • Document Reference: MF-DOC-2026-V2.4
   </div>
 
 </body>

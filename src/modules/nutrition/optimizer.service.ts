@@ -288,7 +288,7 @@ export class NutritionOptimizerService {
       }
       whatsAppText += `\n`;
     }
-    whatsAppText += `✨ *Generated with MealFit India* (High-Protein Budget Optimizer)`;
+    whatsAppText += `✨ *Generated with MealFit* (High-Protein Budget Optimizer)`;
 
     return {
       weeklyBudgetInr,
